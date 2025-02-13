@@ -2,9 +2,13 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - feature  # Deploy from both main and feature branches
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - feature
 
 jobs:
   test:
@@ -30,7 +34,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -51,8 +55,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "."  # Copy the entire repository
-          target: "/home/${{ secrets.EC2_USERNAME }}/"  # Copy directly into the home directory
+          source: "."  
+          target: "/home/${{ secrets.EC2_USERNAME }}/"
 
       - name: Stop and Remove Existing Containers on EC2
         uses: appleboy/ssh-action@master
